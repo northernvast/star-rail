@@ -1,4 +1,5 @@
-const Stat {
+// instead of enum class
+const Stat = {
     // Base Stats
     FLAT_HP: { name: "HP", scale: 0 },
     FLAT_ATK: { name: "ATK", scale: 0 },
@@ -11,36 +12,12 @@ const Stat {
     CRIT_RATE: { name: "CRIT Rate%", scale: 1 },
     CRIT_DMG: { name: "CRIT DMG%", scale: 1 },
     BREAK_EFFECT: { name: "Break Effect%", scale: 1 },
-    OUTGOING_HEALING_BOOST: { name: "Outgoing Healing Boost", scale: 1 },
-    ENERGY_REGENERATION_RATE: { name: "Energy Regeneration Rate", scale: 1 },
+//    OUTGOING_HEALING_BOOST: { name: "Outgoing Healing Boost", scale: 1 },
+//    ENERGY_REGENERATION_RATE: { name: "Energy Regeneration Rate", scale: 1 },
     EFFECT_HIT_RATE: { name: "Effect Hit Rate%", scale: 1 },
     EFFECT_RES: { name: "Effect RES%", scale: 1 },
-    ELEMENTAL_DMG_BOOST: { name: "Elemental DMG Boost", scale: 1},
+//    ELEMENTAL_DMG_BOOST: { name: "Elemental DMG Boost", scale: 1},
 }
-
-class MainStat {
-    constructor(stat, value) {
-        this.stat = stat;
-        this.value = value;
-    }
-    get formattedValue() { format(value, stat.scale); }
-}
-
-const mainStats = [
-    new MainStat(Stat.SPD, 25.032),
-    new MainStat(Stat.FLAT_HP, 705.6),
-    new MainStat(Stat.FLAT_ATK, 352.8),
-    new MainStat(Stat.HP, 43.2),
-    new MainStat(Stat.ATK, 43.2),
-    new MainStat(Stat.DEF, 54),
-    new MainStat(Stat.BREAK_EFFECT, 64.8),
-    new MainStat(Stat.EFFECT_HIT_RATE, 43.2),
-    new MainStat(Stat.ENERGY_REGENERATION_RATE, 19.4394),
-    new MainStat(Stat.OUTGOING_HEALING_BOOST, 34.5606),
-    new MainStat(Stat.ELEMENTAL_DMG_BOOST, 38.8803),
-    new MainStat(Stat.CRIT_RATE, 32.4),
-    new MainStat(Stat.CRIT_DMG, 64.8)
-];
 
 class SubStat {
     constructor(stat, log) {
@@ -84,8 +61,8 @@ class SubStat {
 
 class PossibleSubStat {
     constructor(stat) {
-        this.all = PossibleRelicSubStat.#COMBINATIONS
-                .map(it => new RelicSubStat(stat, it))
+        this.all = PossibleSubStat.#COMBINATIONS
+                .map(it => new SubStat(stat, it))
                 .sort((a, b) => a.value - b.value);
     }
 
@@ -107,7 +84,7 @@ class PossibleSubStat {
 
 // data
 
-const data = [
+const possibleSubStats = [
     Stat.FLAT_HP,
     Stat.FLAT_ATK,
     Stat.FLAT_DEF,
@@ -120,7 +97,7 @@ const data = [
     Stat.BREAK_EFFECT,
     Stat.EFFECT_HIT_RATE,
     Stat.EFFECT_RES
-].forEach(it => new PossibleSubStat(it));
+].map(it => new PossibleSubStat(it));
 
 // utility functions
 

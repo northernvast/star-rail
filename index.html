@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Star Rail 5遺物サブステチェッカー</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./css/colors.css">
+  <link rel="stylesheet" href="./css/switch.css">
+</head>
+
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0px;
+    background: var(--color-surface);
+  }
+  h1 {
+    color: var(--color-on-surface);
+    font-size: 20px;
+    padding: 10px;
+  }
+  .wrapper {
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .wrapper > div {
+    margin: 5px;
+  }
+</style>
+
+<style>
+  #sub-stat-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: minmax(50px, auto);
+    row-gap: 2px;
+    border: 1px solid var(--color-outline);
+    border-radius: 20px;
+  }
+  @media screen and (min-width: 800px) {
+    #sub-stat-options {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  #sub-stat-options label {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 20px;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+  }
+  #sub-stat-options label:has(:checked) {
+    background-color: var(--color-secondary-container);
+    color: var(--color-on-secondary-container);
+  }
+  #sub-stat-options label:has(:hover) {
+    background-color: var(--color-surface-variant);
+    color: var(--color-on-surface-variant);
+  }
+  #sub-stat-options input { display: none; }
+  #sub-stat-options input + span {
+    display: none;
+    position: absolute;
+    top: 0px; left: 0px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 16px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 1px solid var(--color-outline);
+    color: var(--color-on-primary);
+    background-color: var(--color-primary);
+  }
+  #sub-stat-options input:checked + span { display: block; }
+</style>
+
+<style>
+  #sub-stat-value-options {
+    border: 1px solid var(--color-outline);
+    border-radius: 20px;
+    padding: 10px;
+    display: grid;
+    gap: 20px;
+  }
+  #sub-stat-value-options > div {
+    display: grid;
+    grid-template-columns: 135px auto;
+    gap: 5px;
+  }
+  .sub-stat-values-in-game { position: relative; }
+  .sub-stat-values-in-game select {
+    display: block;
+    width: 135px; height: 56px;
+    font-size: 16px;
+    padding: 16px 8px 16px 8px;
+    border-radius: 5px;
+    border-color: var(--color-outline);
+    color: var(--color-on-surface);
+    background-color: var(--color-surface);
+  }
+  .sub-stat-values-in-game .label-text {
+    position: absolute;
+    top: -6px; left: 8px;
+    padding: 0px 5px 0px 5px;
+    font-wight: 400;
+    font-size: 12px;
+    color: var(--color-on-surface);
+    background-color: var(--color-surface);
+  }
+  .sub-stat-values-in-group label {
+    display: flex;
+    width: 100%; height: 50px;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 3px;
+    padding: 15px;
+    border-bottom: 1px solid var(--color-outline);
+    border-radius: 5px 5px 0px 0px;
+    color: var(--color-on-surface);
+    background-color: var(--color-surface);
+  }
+  .sub-stat-values-in-group label:has(:checked) {
+    color: var(--color-on-secondary-container);
+    background-color: var(--color-secondary-container);
+  }
+  .sub-stat-values-in-group label:has(:hover) {
+    color: var(--color-on-surface-variant);
+    background-color: var(--color-surface-variant);
+  }
+  .sub-stat-values-in-group input { display: none; }
+  .horizontal-stacked-bar {
+    width: 60%; height: 30px;
+    display: flex;
+    align-items: center;
+  }
+  .sub-stat-values-in-group input:checked + .horizontal-stacked-bar {
+    background: repeating-linear-gradient(to right,
+      var(--color-surface) 0%,
+      var(--color-surface) calc(16.666% - 2px),
+      #9198e5 16.666%);
+  }
+  .sub-stat-values-in-group input:hover + .horizontal-stacked-bar {
+    background: repeating-linear-gradient(to right,
+      var(--color-surface) 0%,
+      var(--color-surface) calc(16.666% - 2px),
+      #9198e5 16.666%);
+  }
+  .horizontal-stacked-bar :where(.low-bar, .med-bar, .high-bar) {
+    border: 1px solid var(--color-outline);
+    height: 20px;
+    border-radius: 5px;
+  }
+  .low-bar {
+    background-color: #55f;
+    width: 13.333%;
+  }
+  .med-bar {
+    background-color: #5f5;
+    width: 15%;
+  }
+  .high-bar {
+    background-color: #f55;
+    width: 16.666%;
+  }
+</style>
+
+<style>
+  .setting {
+    border: 1px solid var(--color-outline);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .setting label {
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    justify-content: space-between;
+    color: var(--color-on-surface);
+    background-color: var(--color-surface);
+  }
+</style>
+<body>
+
+<div class="wrapper">
+  <h1>STAR RAIL RELIC SUB STATS CHECKER</h1>
+
+  <div id="sub-stat-options">
+    <label><input type="checkbox" value="FLAT_HP"><span></span>HP</label>
+    <label><input type="checkbox" value="FLAT_ATK"><span></span>攻撃力</label>
+    <label><input type="checkbox" value="FLAT_DEF"><span></span>防御力</label>
+    <label><input type="checkbox" value="HP"><span></span>HP(%)</label>
+    <label><input type="checkbox" value="ATK"><span></span>攻撃力(%)</label>
+    <label><input type="checkbox" value="DEF"><span></span>防御力(%)</label>
+    <label><input type="checkbox" value="CRIT_RATE"><span></span>会心率(%)</label>
+    <label><input type="checkbox" value="CRIT_DMG"><span></span>会心ダメージ(%)</label>
+    <label><input type="checkbox" value="SPD"><span></span>速度</label>
+    <label><input type="checkbox" value="BREAK_EFFECT"><span></span>撃破特攻(%)</label>
+    <label><input type="checkbox" value="EFFECT_HIT_RATE"><span></span>効果命中(%)</label>
+    <label><input type="checkbox" value="EFFECT_RES"><span></span>効果抵抗(%)</label>
+  </div>
+
+  <div id="sub-stat-value-options">
+    <div>
+      <label class="sub-stat-values-in-game"><span class="label-text"></span><select></select></label>
+      <div class="sub-stat-values-in-group">
+<!--        <label>-->
+<!--          <span>value</span>-->
+<!--          <input type="radio" name="stat0">-->
+<!--          <div class="horizontal-stacked-bar">-->
+<!--            <div class="high-bar"></div>-->
+<!--            <div class="high-bar"></div>-->
+<!--            <div class="high-bar"></div>-->
+<!--            <div class="high-bar"></div>-->
+<!--            <div class="high-bar"></div>-->
+<!--            <div class="low-bar"></div>-->
+<!--          </div>-->
+<!--        </label>-->
+      </div>
+    </div>
+    <div>
+      <label class="sub-stat-values-in-game"><span class="label-text"></span><select></select></label>
+      <div class="sub-stat-values-in-group"></div>
+    </div>
+    <div>
+      <label class="sub-stat-values-in-game"><span class="label-text"></span><select></select></label>
+      <div class="sub-stat-values-in-group"></div>
+    </div>
+    <div>
+      <label class="sub-stat-values-in-game"><span class="label-text"></span><select></select></label>
+      <div class="sub-stat-values-in-group"></div>
+    </div>
+  </div>
+
+  <div class="setting">
+    <label>重複した値を除く<input id="deduplicate" class="switch" type="checkbox"></label>
+    <label>ダークモード<input id="dark-mode" class="switch" type="checkbox"></label>
+  </div>
+</div>
+<script src="./js/relic.js"></script>
+<script src="./js/control.js"></script>
+</body>
+</html>

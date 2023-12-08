@@ -15,9 +15,10 @@
     background: var(--color-surface);
   }
   h1 {
-    color: var(--color-on-surface);
+    color: var(--color-on-primary);
     font-size: 20px;
     padding: 10px;
+    background-color: var(--color-primary);
   }
   .wrapper {
     max-width: 1000px;
@@ -170,6 +171,17 @@
 </style>
 
 <style>
+  .score {
+    border: 1px solid var(--color-outline);
+    border-radius: 20px;
+    overflow: hidden;
+    padding: 10px;
+    background-color: var(--color-surface);
+    color: var(--color-on-surface);
+  }
+</style>
+
+<style>
   .setting {
     border: 1px solid var(--color-outline);
     border-radius: 20px;
@@ -234,6 +246,10 @@
       <label class="sub-stat-values-in-game"><span class="label-text"></span><select></select></label>
       <div class="sub-stat-values-in-group"></div>
     </div>
+  </div>
+
+  <div class="score">
+    SCORE: <span id="total">80</span> / 90
   </div>
 
   <div class="setting">

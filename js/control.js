@@ -125,7 +125,7 @@ function onSelectChange(index) {
     updateSubStatValuesInGroup();
 }
 
-pool.selects.forEach((it, idx) => it.addEventListener("change", () => { onSelectChange(idx) }));
+pool.selects.forEach((it, idx) => it.addEventListener("change", () => onSelectChange(idx)));
 
 function updateSubStatValuesInGroup() {
     subStats.map(stat => selectors.find(it => it.stat == stat)).forEach((selector, index) => {
@@ -141,6 +141,7 @@ function updateSubStatValuesInGroup() {
                 if (radio.checked) {
                     selector.cursor[1] = idx;
                 }
+                updateScore();
             });
             label.appendChild(radio);
             let graph = createElemWithClass("div", "horizontal-stacked-bar");
@@ -162,6 +163,7 @@ function updateSubStatValuesInGroup() {
     for (let index = subStats.length; index < MAX_SELECTABLE_COUNT; index++) {
         clear(pool.groups[index]);
     }
+    updateScore();
 }
 
 function repeat(times, func) {
@@ -183,9 +185,31 @@ document.getElementById("deduplicate").addEventListener("change", (e) => {
     }
     selectors = newSelectors;
     updateSubStatValuesInGame();
-    updateSubStatValuesInGroup()
+    updateSubStatValuesInGroup();
 });
 
 document.getElementById("dark-mode").addEventListener("change", (e) => {
     document.body.classList.toggle("dark");
 });
+
+const weight = new Map();
+list.forEach(stat => {
+    switch (stat) {
+        case Stat.FLAT_HP:
+        case Stat.FLAT_ATK:
+        case Stat.FLAT_DEF:
+            weight.set(stat, 0.5);
+            break;
+        default:
+            weight.set(stat, 1);
+            break;
+    }
+});
+
+function updateScore() {
+    let total = 0;
+    subStats.map(stat => selectors.find(it => it.stat == stat)).forEach(selector => {
+        total += selector.current.value / last(SubStat.getInitialValues(selector.stat)) * weight.get(selector.stat) * 10;
+    });
+    document.getElementById("total").textContent = Math.round(total * 10) / 10;
+}

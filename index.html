@@ -196,6 +196,17 @@
     background-color: var(--color-surface);
   }
 </style>
+
+<style>
+  .how-to {
+    border: 1px solid var(--color-outline);
+    border-radius: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: var(--color-on-surface);
+    background-color: var(--color-surface);
+  }
+</style>
 <body>
 
 <div class="wrapper">
@@ -255,6 +266,16 @@
   <div class="setting">
     <label>重複したサブステを除く<input id="deduplicate" class="switch" type="checkbox"></label>
     <label>ダークモード<input id="dark-mode" class="switch" type="checkbox"></label>
+  </div>
+
+  <div class="how-to">
+    <h5>使い方</h5>
+    <p>
+      ゲーム内の遺物のサブステータスを入力するとその近似値と強化割合を示したグラフが表示されます。<br>
+      スコアは各サブステータスのスコアを合計したものです。90が最大値です。<br>
+      各スコア = (値) ÷ (最大初期・強化値) × 10 × (重さ)<br>
+      ※重さ：ＨＰ固定値・攻撃力固定値・防御力固定値は0.5、それ以外は１。
+    </p>
   </div>
 </div>
 <script src="./js/relic.js"></script>

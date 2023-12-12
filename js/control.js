@@ -122,6 +122,7 @@ function updateSubStatValuesInGame() {
 function onSelectChange(index) {
     let selector = selectors.find(it => it.stat == subStats[index]);
     selector.cursor[0] = pool.selects[index].selectedIndex;
+    selector.cursor[1] = 0;
     updateSubStatValuesInGroup();
 }
 

@@ -20,24 +20,23 @@ const Stat = {
 }
 
 class SubStat {
-    constructor(stat, log) {
+    constructor(stat, rolls) {
         this.stat = stat;
-        this.log = log;
-    }
+        this.rolls = rolls;
 
-    get value() {
-        let v = 0;
-        let power = 1000;
-        SubStat.getInitialValues(this.stat).forEach((val, idx) => {
-            v += power * val * this.log[idx];
-        });
-        return Math.floor(v) / power;
+        let v = 0, power = 1000;
+        SubStat.getInitialValues(stat).forEach((val, idx) => v += power * val * this.rolls[idx]);
+        this.value = Math.floor(v) / power;
     }
 
     // return value in game
     get formattedValue() { return format(this.value, this.stat.scale); }
 
-    equals(o) { return this.stat == o.stat && sum(this.log) == sum(o.log) && this.value == o.value; }
+    equals(o) { return this.stat == o.stat && sum(this.rolls) == sum(o.rolls) && this.value == o.value; }
+
+    static createAll(stat) {
+        return SubStat.allRolls.map(it => new SubStat(stat, it)).sort((a, b) => a.value - b.value);
+    }
     
     // get values for initial or increase
     static getInitialValues(stat) {
@@ -57,6 +56,24 @@ class SubStat {
             default: return undefined;
         }
     }
+
+    // return all possible stat types
+    static allStats = [
+        Stat.FLAT_HP, Stat.FLAT_ATK, Stat.FLAT_DEF, Stat.HP, Stat.ATK, Stat.DEF, Stat.SPD,
+        Stat.CRIT_RATE, Stat.CRIT_DMG, Stat.BREAK_EFFECT, Stat.EFFECT_HIT_RATE, Stat.EFFECT_RES
+    ];
+
+    static allRolls = [ // 83 combinations
+        [1,0,0],[0,1,0],[0,0,1],[2,0,0],[1,1,0],[1,0,1],[0,2,0],[0,1,1],[0,0,2],[3,0,0],
+        [2,1,0],[2,0,1],[1,2,0],[1,1,1],[1,0,2],[0,3,0],[0,2,1],[0,1,2],[0,0,3],[4,0,0],
+        [3,1,0],[3,0,1],[2,2,0],[2,1,1],[2,0,2],[1,3,0],[1,2,1],[1,1,2],[1,0,3],[0,4,0],
+        [0,3,1],[0,2,2],[0,1,3],[0,0,4],[5,0,0],[4,1,0],[4,0,1],[3,2,0],[3,1,1],[3,0,2],
+        [2,3,0],[2,2,1],[2,1,2],[2,0,3],[1,4,0],[1,3,1],[1,2,2],[1,1,3],[1,0,4],[0,5,0],
+        [0,4,1],[0,3,2],[0,2,3],[0,1,4],[0,0,5],[6,0,0],[5,1,0],[5,0,1],[4,2,0],[4,1,1],
+        [4,0,2],[3,3,0],[3,2,1],[3,1,2],[3,0,3],[2,4,0],[2,3,1],[2,2,2],[2,1,3],[2,0,4],
+        [1,5,0],[1,4,1],[1,3,2],[1,2,3],[1,1,4],[1,0,5],[0,6,0],[0,5,1],[0,4,2],[0,3,3],
+        [0,2,4],[0,1,5],[0,0,6]
+    ];
 }
 
 // utility functions

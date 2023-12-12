@@ -1,6 +1,8 @@
 const MAX_SELECTABLE_COUNT = 4;
 
 let checkboxes = [];
+let stats = [];
+
 function onChange(event) {
     let checkbox = event.target;
     if (checkbox.checked) {
@@ -13,7 +15,7 @@ function onChange(event) {
         checkboxes = checkboxes.filter(it => it != checkbox);
     }
     checkboxes.forEach((it, idx) => it.nextElementSibling.textContent = idx + 1);
-    subStats = checkboxes.map(it => Stat[it.value]);
+    stats = checkboxes.map(it => Stat[it.value]);
     updateSubStatValuesInGame();
     updateSubStatValuesInGroup()
 }
@@ -22,12 +24,11 @@ document.getElementById("sub-stat-options")
         .querySelectorAll("input")
         .forEach(it => it.addEventListener("change", onChange));
 
-class SubStatSelector {
+class Select {
     constructor(stat, deduplicate) {
         this.stat = stat;
-        let all = SubStatSelector.#COMBINATIONS
-                .map(it => new SubStat(stat, it))
-                .sort((a, b) => a.value - b.value);
+        this.deduplicate = deduplicate;
+        let all = SubStat.createAll(stat);
         if (deduplicate) {
             all = all.filter((a, pos) => all.findIndex(b => a.equals(b)) == pos);
         }
@@ -52,44 +53,27 @@ class SubStatSelector {
     get max() { return last(last(this.groups)); }
     get current() { return this.groups[this.cursor[0]][this.cursor[1]]; }
 
-    static #COMBINATIONS = [ // 83 combinations
-        [1,0,0],[0,1,0],[0,0,1],[2,0,0],[1,1,0],[1,0,1],[0,2,0],[0,1,1],[0,0,2],[3,0,0],
-        [2,1,0],[2,0,1],[1,2,0],[1,1,1],[1,0,2],[0,3,0],[0,2,1],[0,1,2],[0,0,3],[4,0,0],
-        [3,1,0],[3,0,1],[2,2,0],[2,1,1],[2,0,2],[1,3,0],[1,2,1],[1,1,2],[1,0,3],[0,4,0],
-        [0,3,1],[0,2,2],[0,1,3],[0,0,4],[5,0,0],[4,1,0],[4,0,1],[3,2,0],[3,1,1],[3,0,2],
-        [2,3,0],[2,2,1],[2,1,2],[2,0,3],[1,4,0],[1,3,1],[1,2,2],[1,1,3],[1,0,4],[0,5,0],
-        [0,4,1],[0,3,2],[0,2,3],[0,1,4],[0,0,5],[6,0,0],[5,1,0],[5,0,1],[4,2,0],[4,1,1],
-        [4,0,2],[3,3,0],[3,2,1],[3,1,2],[3,0,3],[2,4,0],[2,3,1],[2,2,2],[2,1,3],[2,0,4],
-        [1,5,0],[1,4,1],[1,3,2],[1,2,3],[1,1,4],[1,0,5],[0,6,0],[0,5,1],[0,4,2],[0,3,3],
-        [0,2,4],[0,1,5],[0,0,6]
-    ];
-}
-
-const list = [
-    Stat.FLAT_HP, Stat.FLAT_ATK, Stat.FLAT_DEF,
-    Stat.HP, Stat.ATK, Stat.DEF, Stat.SPD,
-    Stat.CRIT_RATE, Stat.CRIT_DMG,
-    Stat.BREAK_EFFECT, Stat.EFFECT_HIT_RATE, Stat.EFFECT_RES
-];
-
-
-let pool;
-{
-    let valueOptions = document.getElementById("sub-stat-value-options");
-    pool = {
-        labels: valueOptions.querySelectorAll(".label-text"),
-        selects: valueOptions.querySelectorAll("select"),
-        groups: valueOptions.querySelectorAll(".sub-stat-values-in-group")
+    toggle() {
+        let newSelect = new Select(this.stat, !this.deduplicate);
+        newSelect.cursor[0] = this.cursor[0];
+        newSelect.cursor[1] = newSelect.groups[this.cursor[0]].findIndex(it => this.current.equals(it));
+        return newSelect;
     }
 }
 
-let selectors = list.map(it => new SubStatSelector(it, false));
-
-let subStats = [];
-
-function clear(e) {
-    while (e.firstChild != null) { e.removeChild(e.firstChild); }
+let view;
+{
+    let viewSubStats = document.getElementById("sub-stat-value-options");
+    view = {
+        labels: viewSubStats.querySelectorAll(".label-text"),
+        selects: viewSubStats.querySelectorAll("select"),
+        groups: viewSubStats.querySelectorAll(".sub-stat-values-in-group")
+    }
 }
+
+let selects = SubStat.allStats.map(it => new Select(it, false));
+
+function clear(e) { while (e.firstChild != null) { e.removeChild(e.firstChild); } }
 
 function createElemWithText(tagName, text) {
     let e = document.createElement(tagName);
@@ -104,50 +88,50 @@ function createElemWithClass(tagName, className) {
 }
 
 function updateSubStatValuesInGame() {
-    subStats.map(stat => selectors.find(it => it.stat == stat)).forEach((selector, index) => {
-        pool.labels[index].textContent = selector.stat.name;
-        clear(pool.selects[index]);
-        selector.groups.forEach(it => {
-          let op = createElemWithText("option", first(it).formattedValue);
-          pool.selects[index].appendChild(op);
+    stats.map(stat => selects.find(it => it.stat == stat)).forEach((select, index) => {
+        view.labels[index].textContent = select.stat.name;
+        clear(view.selects[index]);
+        select.groups.forEach(it => {
+            let op = createElemWithText("option", first(it).formattedValue);
+            view.selects[index].appendChild(op);
         });
-        pool.selects[index].selectedIndex = selector.cursor[0];
+        view.selects[index].selectedIndex = select.cursor[0];
     });
-    for (let index = subStats.length; index < MAX_SELECTABLE_COUNT; index++) {
-        pool.labels[index].textContent = "";
-        clear(pool.selects[index]);
+    for (let index = stats.length; index < MAX_SELECTABLE_COUNT; index++) {
+        view.labels[index].textContent = "";
+        clear(view.selects[index]);
     }
 }
 
 function onSelectChange(index) {
-    let selector = selectors.find(it => it.stat == subStats[index]);
-    selector.cursor[0] = pool.selects[index].selectedIndex;
-    selector.cursor[1] = 0;
+    let select = selects.find(it => it.stat == stats[index]);
+    select.cursor[0] = view.selects[index].selectedIndex;
+    select.cursor[1] = 0;
     updateSubStatValuesInGroup();
 }
 
-pool.selects.forEach((it, idx) => it.addEventListener("change", () => onSelectChange(idx)));
+view.selects.forEach((it, idx) => it.addEventListener("change", () => onSelectChange(idx)));
 
 function updateSubStatValuesInGroup() {
-    subStats.map(stat => selectors.find(it => it.stat == stat)).forEach((selector, index) => {
-        clear(pool.groups[index]);
-        selector.groups[selector.cursor[0]].forEach((sub, idx) => {
+    stats.map(stat => selects.find(it => it.stat == stat)).forEach((select, index) => {
+        clear(view.groups[index]);
+        select.groups[select.cursor[0]].forEach((sub, idx) => {
             let label = document.createElement("label");
             label.appendChild(createElemWithText("span", sub.value));
             let radio = document.createElement("input");
             radio.setAttribute("type", "radio");
             radio.setAttribute("name", "stat" + index);
-            if (idx == selector.cursor[1]) { radio.checked = true; }
+            if (idx == select.cursor[1]) { radio.checked = true; }
             radio.addEventListener("change", () => {
                 if (radio.checked) {
-                    selector.cursor[1] = idx;
+                    select.cursor[1] = idx;
                 }
                 updateScore();
             });
             label.appendChild(radio);
             let graph = createElemWithClass("div", "horizontal-stacked-bar");
             for (let i = 2; i >= 0; i--) {
-                repeat(sub.log[i], () => {
+                repeat(sub.rolls[i], () => {
                     let bar = document.createElement("div");
                     switch (i) {
                         case  0: bar.classList.add("low-bar"); break;
@@ -158,11 +142,11 @@ function updateSubStatValuesInGroup() {
                 });
             }
             label.appendChild(graph);
-            pool.groups[index].appendChild(label);
+            view.groups[index].appendChild(label);
         });
     });
-    for (let index = subStats.length; index < MAX_SELECTABLE_COUNT; index++) {
-        clear(pool.groups[index]);
+    for (let index = stats.length; index < MAX_SELECTABLE_COUNT; index++) {
+        clear(view.groups[index]);
     }
     updateScore();
 }
@@ -172,29 +156,18 @@ function repeat(times, func) {
 }
 
 document.getElementById("deduplicate").addEventListener("change", (e) => {
-    let newSelectors;
-    if (e.target.checked) {
-        newSelectors = list.map(it => new SubStatSelector(it, true));
-    } else {
-        newSelectors = list.map(it => new SubStatSelector(it, false));
-    }
-    for (let i = 0; i < list.length; i++) {
-        let cursor = selectors[i].cursor;
-        newSelectors[i].cursor[0] = cursor[0];
-        target = selectors[i].current;
-        newSelectors[i].cursor[1] = newSelectors[i].groups[cursor[0]].findIndex(it => target.equals(it))
-    }
-    selectors = newSelectors;
+    selects = selects.map(it => it.toggle());
     updateSubStatValuesInGame();
     updateSubStatValuesInGroup();
 });
+
 
 document.getElementById("dark-mode").addEventListener("change", (e) => {
     document.body.classList.toggle("dark");
 });
 
 const weight = new Map();
-list.forEach(stat => {
+SubStat.allStats.forEach(stat => {
     switch (stat) {
         case Stat.FLAT_HP:
         case Stat.FLAT_ATK:
@@ -209,8 +182,8 @@ list.forEach(stat => {
 
 function updateScore() {
     let total = 0;
-    subStats.map(stat => selectors.find(it => it.stat == stat)).forEach(selector => {
-        total += selector.current.value / last(SubStat.getInitialValues(selector.stat)) * weight.get(selector.stat) * 10;
+    stats.map(stat => selects.find(it => it.stat == stat)).forEach(select => {
+        total += select.current.value / last(SubStat.getInitialValues(select.stat)) * weight.get(select.stat) * 10;
     });
     document.getElementById("total").textContent = Math.round(total * 10) / 10;
 }
